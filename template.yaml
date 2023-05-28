@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: An AWS Serverless Specification template describing your function.
+Globals:
+  Function:
+    Timeout: 3
+Parameters:
+  DomainName:
+    Type: String
+    Default: hcaptcha.kaotue.com
+  HCaptchaSiteKey:
+    Type: String
+  HCaptchaSecret:
+    Type: String
+Resources:
+  HCaptchaApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: hcaptcha-api
+      CodeUri: src/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Architectures: [x86_64]
+      Timeout: 120
+      MemorySize: 1024
+      Environment:
+        Variables:
+          HCAPTCHA_SITE_KEY: !Ref HCaptchaSiteKey
+          HCAPTCHA_SECRET: !Ref HCaptchaSecret
+      Events:
+        ApiRoot:
+          Type: Api
+          Properties:
+            Path: '/'
+            Method: ANY
+            RestApiId: !Ref HCaptchaApi
+        ApiProxy:
+          Type: Api
+          Properties:
+            Path: '/{proxy+}'
+            Method: ANY
+            RestApiId: !Ref HCaptchaApi
+  HCaptchaApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      OpenApiVersion: 3.0.2
+      Name: hcaptcha-api
+      MethodSettings:
+      - HttpMethod: '*'
+        ResourcePath: '/*'
+        ThrottlingBurstLimit: 3
+        ThrottlingRateLimit: 3
+  HCaptchaApiGatewayBasePathMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    Properties:
+      DomainName: !Ref DomainName
+      ApiId: !Ref HCaptchaApi
+      Stage: !Ref HCaptchaApi.Stage
+Outputs:
+  HCaptchaApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    Value: !Sub "https://${DomainName}/"
+  HCaptchaApiFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt HCaptchaApiFunction.Arn
+  HCaptchaApiFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt HCaptchaApiFunctionRole.Arn
+    

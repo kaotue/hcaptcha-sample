@@ -4,12 +4,18 @@
   <meta charset="utf-8">
   <title>hCaptcha Sample</title>
   <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+  <script>
+    function hcaptchaCallBackFunction()
+    {
+      document.getElementById("submit_button").style.display = "block";
+    }
+  </script>
 </head>
 <body>
   <form action="" method="POST">
-    <div class="h-captcha" data-sitekey="{{HCAPTCHA_SITE_KEY}}"></div>
+    <div class="h-captcha" data-sitekey="{{HCAPTCHA_SITE_KEY}}" data-callback="hcaptchaCallBackFunction"></div>
     <br />
-    <input type="submit" value="Submit" />
+    <input type="submit" id="submit_button" value="Submit" style="display: none;" />
   </form>
 </body>
 </html>
